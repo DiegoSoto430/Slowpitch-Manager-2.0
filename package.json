@@ -1,0 +1,11 @@
+{
+  "name": "baseball-manager",
+  "version": "0.1.0",
+  "description": "PWA para registrar equipos, juegos y estadísticas de baseball y slowpitch",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "dev": "node server.js" },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": { "express": "^4.21.2" }
+}
