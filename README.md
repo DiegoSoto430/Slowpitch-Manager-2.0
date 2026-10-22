@@ -80,6 +80,15 @@ Cada `git push` a `main` vuelve a desplegar solo.
 Nota: en el plan gratuito de Render el servicio se duerme tras un rato sin uso y la primera visita
 después de eso tarda en cargar.
 
+## Mantener despierto Render y Supabase
+
+- Render gratis duerme el servicio tras unos 15 minutos sin visitas, y Supabase gratis pausa el proyecto
+  tras una semana sin actividad en la base de datos.
+- El servidor trae la ruta `/api/keepalive`, que hace una consulta mínima a Supabase (cuenta como actividad).
+- En UptimeRobot (o cron-job.org) crea un monitor **HTTP(s)** con la URL
+  `https://TU-APP.onrender.com/api/keepalive` y un intervalo de 5 a 10 minutos.
+- Responde `200` si Supabase contestó y `502` si no, así el monitor te avisa si algo falla.
+
 ## 4. Instalarla en el celular
 
 Abre la URL en el navegador del celular y elige **Agregar a pantalla de inicio** (Android: menú de Chrome >

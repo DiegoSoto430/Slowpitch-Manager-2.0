@@ -20,6 +20,27 @@ app.get('/api/config', (_req, res) => {
   });
 });
 
+// Mantiene vivo el proyecto de Supabase (los gratuitos se pausan tras ~1 semana sin actividad).
+// Apunta aquí un monitor (UptimeRobot, cron-job.org) cada 5 a 10 minutos. También evita que Render se duerma.
+app.get('/api/keepalive', async (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) return res.json({ ok: true, supabase: 'sin configurar' });
+  try {
+    const headers = { apikey: key };
+    if (key.startsWith('eyJ')) headers.Authorization = 'Bearer ' + key; // solo llaves anon antiguas (JWT)
+    const r = await fetch(url.replace(/\/$/, '') + '/rest/v1/teams?select=id&limit=1', {
+      headers,
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) return res.status(502).json({ ok: false, supabase: r.status });
+    res.json({ ok: true, supabase: r.status });
+  } catch (e) {
+    res.status(502).json({ ok: false, supabase: 'sin respuesta' });
+  }
+});
+
 app.use(
   express.static(PUBLIC, {
     setHeaders(res, file) {
