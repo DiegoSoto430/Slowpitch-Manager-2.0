@@ -1,5 +1,5 @@
 // Service worker: la app abre aunque no haya internet (después de la primera carga).
-const CACHE = 'bm-v2';
+const CACHE = 'bm-v3';
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {

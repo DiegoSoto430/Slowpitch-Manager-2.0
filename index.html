@@ -294,6 +294,19 @@ td:first-child,th:first-child{text-align:left;position:sticky;left:0;font-weight
 .undo:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 .undo:disabled{opacity:.45;cursor:default}
 .fld{margin-top:14px}
+
+.act:last-child:nth-child(3n+1){grid-column:1/-1}
+.qa{margin-top:12px}
+.qa h3{font-size:.95rem;margin-bottom:6px}
+.qr{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.qa h3+.qr{border-top:0}
+.qn{width:74px;flex:none;font-weight:600;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qc{display:flex;gap:6px;flex-wrap:wrap}
+.qb{border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 11px;font:600 .8rem var(--font);cursor:pointer}
+.qb.on{background:var(--sky);border-color:var(--sky);color:#fff}
+.qb.h.on{background:var(--grass);border-color:var(--grass)}
+.qb.o.on{background:var(--stitch);border-color:var(--stitch)}
+.qb:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){
   .fx,.screen.active:not(.leaving):not(.entering) .fx{transition-duration:.01s;transition-delay:0s}
   .plist li{animation:none}
@@ -723,8 +736,8 @@ td:first-child,th:first-child{text-align:left;position:sticky;left:0;font-weight
 
   /* ---- nuevo partido, orden al bat y juego en vivo ---- */
   var setup={sel:[],rival:''},orderSel=[],rbiN=0,pickK=null,drag=null,POS={1:[78,50],2:[50,9],3:[22,50],h:[50,91]};
-  var TY={h:{n:'Hit',ab:1,h:1,b:1},d:{n:'Doble',ab:1,h:1,d:1,b:2},t:{n:'Triple',ab:1,h:1,t:1,b:3},hr:{n:'Home run',ab:1,h:1,hr:1},bb:{n:'Base por bolas',bb:1},sf:{n:'Fly sacrificio',sf:1},out:{n:'Out',ab:1},fc:{n:'Fielder’s choice',ab:1,fc:1},dp:{n:'Doble play',ab:1,dp:1}};
-  var ACTS=[['h','ah'],['d','ah'],['t','ah'],['hr','ar'],['bb','ab'],['sf','ao'],['out','ao'],['fc','ao'],['dp','ao']];
+  var TY={h:{n:'Hit',ab:1,h:1,b:1},d:{n:'Doble',ab:1,h:1,d:1,b:2},t:{n:'Triple',ab:1,h:1,t:1,b:3},hr:{n:'Home run',ab:1,h:1,hr:1},bb:{n:'Base por bolas',bb:1},sf:{n:'Fly sacrificio',sf:1},out:{n:'Out',ab:1},k:{n:'Ponche',ab:1,k:1},fc:{n:'Fielder’s choice',ab:1,fc:1},dp:{n:'Doble play',ab:1,dp:1}};
+  var ACTS=[['h','ah'],['d','ah'],['t','ah'],['hr','ar'],['bb','ab'],['sf','ao'],['out','ao'],['k','ao'],['fc','ao'],['dp','ao']];
   function pad(n){return n<10?'0'+n:''+n;}
   function today(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
   function liveKey(){return 'bm_live_'+(ls('bm_session')||'')+'_'+teamId;}
@@ -754,7 +767,7 @@ td:first-child,th:first-child{text-align:left;position:sticky;left:0;font-weight
     if(t==='hr'){B.forEach(function(r){if(r)m[r.k]='h';});return {m:m,bd:'h'};}
     if(T.b){B.forEach(function(r,i){if(r){var d=i+1+T.b;m[r.k]=d>3?'h':d;}});return {m:m,bd:T.b};}
     if(t==='bb'){if(B[0]){m[B[0].k]=2;if(B[1]){m[B[1].k]=3;if(B[2])m[B[2].k]='h';}}return {m:m,bd:1};}
-    if(t==='out')return {m:m,bd:'o'};
+    if(t==='out'||t==='k')return {m:m,bd:'o'};
     if(t==='sf'){if(B[2])m[B[2].k]='h';return {m:m,bd:'o'};}
     bd=(t==='dp')?'o':1;
     var lead=-1,i;
@@ -809,6 +822,16 @@ td:first-child,th:first-child{text-align:left;position:sticky;left:0;font-weight
     var chips=S.bases.map(function(R,x){return R?'<span class="rn'+(can?' dg':'')+'" data-k="'+R.k+'" style="left:'+POS[x+1][0]+'%;top:'+POS[x+1][1]+'%">'+esc(short(R.n))+'</span>':'';}).join('');
     var menu=pr?'<div class="rmenu"><b>Corredor: '+esc(pr.n)+'</b><button type="button" data-rm="ro-base">Out: se salió de la base</button><button type="button" data-rm="ro-otro">Out: otro motivo</button>'+(pi<2?'<button type="button" data-rm="adv">Avanza una base</button>':'')+'<button type="button" data-rm="score">Anota sin impulsada</button><button class="lnk" type="button" data-rm="x">Cancelar</button></div>'
       :'<p class="hint">Toca un corredor para otros movimientos. Justo después de una jugada puedes arrastrarlo a otra base, a home (anota) o a OUT para corregirla.</p>';
+    var qa='';
+    if(can){
+      var qrows=[],LB={1:'1ª',2:'2ª',3:'3ª',h:'Home',o:'Out'};
+      Sb.bases.forEach(function(R,j){if(R){var dq=lb.m[R.k];qrows.push({k:R.k,n:R.n,from:j+1,d:dq===undefined?j+1:dq});}});
+      if(lb.bd!=='o')qrows.push({k:g.ev.length-1,n:lb.p,from:1,d:lb.bd});
+      if(qrows.length)qa='<div class="box qa"><h3>Ajuste rápido de corredores</h3>'+qrows.map(function(q){
+        var opts=[];for(var b=q.from;b<=3;b++)opts.push(b);opts.push('h');opts.push('o');
+        return '<div class="qr"><span class="qn">'+esc(short(q.n))+'</span><div class="qc">'+opts.map(function(o){
+          return '<button type="button" class="qb'+(o==='h'?' h':'')+(o==='o'?' o':'')+(q.d===o?' on':'')+'" data-qk="'+q.k+'" data-qd="'+o+'">'+LB[o]+'</button>';}).join('')+'</div></div>';}).join('')+'</div>';
+    }
     $('pl-body').innerHTML='<div class="kpis"><div class="kpi k1"><b>'+S.inning+'</b><span>Entrada</span></div>'
       +'<div class="kpi k3"><div class="dots">'+[0,1,2].map(function(x){return '<i class="'+(x<S.outs?'on':'')+'"></i>';}).join('')+'</div><span>Outs</span></div>'
       +'<div class="kpi k2"><b>'+S.runs+'</b><span>Carreras</span></div></div>'
@@ -817,7 +840,7 @@ td:first-child,th:first-child{text-align:left;position:sticky;left:0;font-weight
       +'<div class="acts">'+ACTS.map(function(a){return '<button class="act '+a[1]+'" type="button" data-act="'+a[0]+'">'+TY[a[0]].n+'</button>';}).join('')+'</div>'
       +'<div class="lastrow"><span class="lastmv">'+(last?'Último: '+lastText(last):'Aún no hay movimientos.')+'</span><button class="undo" type="button" data-undo'+(last?'':' disabled')+'>Deshacer</button></div>'
       +'<div class="fld"><div class="dia"></div>'+bm(1)+bm(2)+bm(3)+bm('h')+'<div class="oz" data-tg="o">OUT</div>'+chips+'</div>'
-      +(tray.length?'<div class="tray"><span>Esta jugada:</span>'+tray.map(function(x){return '<span class="rn dg tr '+(x.d==='h'?'sc':'ot')+'" data-k="'+x.k+'">'+esc(short(x.n))+(x.d==='h'?' anotó':' out')+'</span>';}).join('')+'</div>':'')
+      +qa
       +menu
       +(lb?'<div class="rbi"><span>CI de la última jugada</span><div class="stp"><button type="button" data-ci="-1" aria-label="Menos">−</button><b>'+lb.c+'</b><button type="button" data-ci="1" aria-label="Más">+</button></div></div>':'');
   }
@@ -946,7 +969,7 @@ td:first-child,th:first-child{text-align:left;position:sticky;left:0;font-weight
       +sec('Carreras',[['CI',a.rbi],['CA',a.r]],2)
       +sec('Jugadas especiales',[['SF',a.sf],['FC',a.fc],['DP',a.dp],['OB',a.ob]],2)
       +'<div class="box ps"><h3>Partido por partido</h3>'+(log||'<p class="none">Aún sin partidos.</p>')+'</div>'
-      +'<p class="legend">VB: veces al bat. CI: carreras impulsadas. CA: carreras anotadas. SF: fly de sacrificio. FC: fielder’s choice. DP: doble play. OB: outs de corredor en bases. Bases: bases totales. Outs: turnos que terminaron en out, incluidos fly de sacrificio y doble play.</p>';
+      +'<p class="legend">VB: veces al bat. CI: carreras impulsadas. CA: carreras anotadas. SF: fly de sacrificio. FC: fielder’s choice. DP: doble play. OB: outs de corredor en bases. Bases: bases totales. Outs: turnos que terminaron en out, incluidos ponches, fly de sacrificio y doble play.</p>';
   }
   function closeDlg(){$('dlg').hidden=true;delId=null;}
   function askDel(id){
@@ -966,6 +989,8 @@ td:first-child,th:first-child{text-align:left;position:sticky;left:0;font-weight
   $('dlg').addEventListener('click',function(e){if(e.target===this)closeDlg();});
   $('dlg-yes').addEventListener('click',function(){var id=delId;closeDlg();mut(function(t){t.games=(t.games||[]).filter(function(g){return g.id!==id;});});toast('Partido eliminado.');});
   document.addEventListener('click',function(e){
+    var qb=e.target.closest('[data-qd]');
+    if(qb){var dd=qb.dataset.qd;amend(+qb.dataset.qk,(dd==='h'||dd==='o')?dd:+dd);return;}
     var so=e.target.closest('[data-sort]');if(so){statSort=so.dataset.sort;renderTeam();return;}
     var pn=e.target.closest('[data-pn]');if(pn){playerName=pn.dataset.pn;go('player');}
   });
